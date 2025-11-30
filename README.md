@@ -53,5 +53,5 @@ Instead of checking every empty spot on the 15x15 board (225 possibilities), the
     ```
 2.  Install dependencies:
     ```bash
-    pip install pygame numpy
+    pip install requirements.txt
     ```
