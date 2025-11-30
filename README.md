@@ -2,6 +2,17 @@
 
 A high-performance Gomoku (Five-in-a-Row) game featuring an intelligent AI opponent, built with Python and Pygame.
 
+## 🚀 Installation
+
+1.  Create a virtual environment:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+2.  Install dependencies:
+    ```bash
+    pip install requirements.txt
+    ```
 ## 🎮 How to Play
 
 1.  **Run the Game**:
@@ -23,7 +34,7 @@ The core decision-making engine is the **Minimax** algorithm. The AI looks ahead
 ### 2. Alpha-Beta Pruning
 To make the search faster, **Alpha-Beta Pruning** is implemented. This optimization allows the AI to stop analyzing a specific sequence of moves as soon as it finds a move that is worse than a previously examined option. This significantly reduces the number of board states the AI needs to evaluate, allowing it to search deeper in the same amount of time.
 
-### 3. Heuristic Evaluation (The "Brain")
+### 3. Heuristic Evaluation
 Since the AI cannot calculate every move until the end of the game, it uses a **Heuristic Function** to estimate how "good" a specific board state is.
 The evaluation logic uses **Pattern Matching** to identify dangerous or winning shapes:
 
@@ -43,15 +54,3 @@ Instead of checking every empty spot on the 15x15 board (225 possibilities), the
 *   Python 3.x
 *   Pygame
 *   Numpy
-
-## 🚀 Installation
-
-1.  Create a virtual environment:
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
-2.  Install dependencies:
-    ```bash
-    pip install requirements.txt
-    ```
