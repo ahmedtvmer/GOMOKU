@@ -20,6 +20,7 @@ game_over = False
 turn = 0
 first_move = True
 
+## making a new game by reseting the board
 def reset_game():
     global board, game_over, turn, first_move, last_move
     board = create_board()
@@ -28,16 +29,20 @@ def reset_game():
     first_move = True
     last_move = None
 
+## creating a new board
 def create_board():
     return np.zeros((row, col), dtype=int)
 
+## checking if a place is available
 def is_available_place(b, r, c):
     return 0 <= r < row and 0 <= c < col and b[r, c] == 0
 
+## placing a new piece
 def drop_piece(b, r, c, piece):
     if is_available_place(b, r, c):
         b[r, c] = piece
 
+## checking if there is a sequence of 5 pieces and return True if so as a win for the player
 def winning_move(b, piece):
     for r in range(row):
         for c in range(col - WIN_COUNT + 1):
@@ -57,6 +62,7 @@ def winning_move(b, piece):
                 return True
     return False
 
+## drawing the board
 def draw_board(b):
     global screen
     screen.fill((50, 50, 50))
@@ -91,6 +97,8 @@ def draw_board(b):
                            
     pygame.display.update()
 
+## helper for score_position function
+## getting the score of a line by checking the number of pieces in sequence and calculate the score using the calculate_shape_score function
 def get_line_score(line, piece, opp_piece):
     score = 0
     s = "".join(['X' if x == piece else 'O' if x == opp_piece else '.' for x in line])
@@ -119,25 +127,28 @@ def get_line_score(line, piece, opp_piece):
         
     return score
 
+## helper for get_line_score function 
+## calculate the score of a shape
 def calculate_shape_score(length, left_open, right_open):
-    if length >= 5:
+    if length >= 5: ## win and game over
         return 100000
-    if length == 4:
+    if length == 4: ## garuanteed win
         if left_open and right_open:
             return 50000
         if left_open or right_open:
             return 10000
     if length == 3:
-        if left_open and right_open:
+        if left_open and right_open: ## a real threat 
             return 10000
-        if left_open or right_open:
+        if left_open or right_open: ## a potential threat
             return 500
     if length == 2:
-        if left_open and right_open:
+        if left_open and right_open: ## start of the threat
             return 100
     return 0
 
-def score_position(b, piece):
+## Heuristic 1
+def heuristic_1(b, piece):
     score = 0
     opp_piece = PLAYER_PIECE if piece == AI_PIECE else AI_PIECE
     
@@ -159,7 +170,7 @@ def score_position(b, piece):
             
     for line in lines:
         score += get_line_score(line, piece, opp_piece)
-        score -= get_line_score(line, opp_piece, piece) * 1.5 
+        score -= get_line_score(line, opp_piece, piece) * 1.5 ## defensive model
         
     center_r, center_c = row // 2, col // 2
     if b[center_r, center_c] == piece:
@@ -167,12 +178,28 @@ def score_position(b, piece):
         
     return score
 
-def heuristic(b, piece):
-    return score_position(b, piece)
+# Heuristic 2
+def heuristic_2(b, piece):
+    opp = PLAYER_PIECE if piece == AI_PIECE else AI_PIECE
+    score = 0
+    center_r, center_c = row // 2, col // 2
+    for r in range(row):
+        for c in range(col):
+            if b[r, c] == piece:
+                score += 10 - (abs(center_r - r) + abs(center_c - c))
+            elif b[r, c] == opp:
+                score -= 8 - (abs(center_r - r) + abs(center_c - c))
+    return score
 
+## the main function for running specific heuristic
+def heuristic(b, piece):
+    return heuristic_1(b, piece)
+
+## check if the game is over
 def is_terminal_node(b):
     return winning_move(b, PLAYER_PIECE) or winning_move(b, AI_PIECE) or not np.any(b == 0)
 
+## get the candidate moves for the AI
 def get_candidate_moves(b, distance=2):
     occupied = list(zip(*np.where(b != 0)))
     if not occupied:
@@ -186,6 +213,7 @@ def get_candidate_moves(b, distance=2):
                     candidates.add((r, c))
     return list(candidates)
 
+## running the minimax algorithm
 def minimax(b, depth, alpha, beta, maximizingPlayer):
     if depth == 0 or is_terminal_node(b):
         if is_terminal_node(b):
@@ -198,6 +226,7 @@ def minimax(b, depth, alpha, beta, maximizingPlayer):
         else:
             return (None, None, heuristic(b, AI_PIECE))
 
+    ## maximizing player is the ai
     if maximizingPlayer:
         value = -float('inf')
         best_move = (None, None)
@@ -227,6 +256,7 @@ def minimax(b, depth, alpha, beta, maximizingPlayer):
                 break
         return (best_move[0], best_move[1], value)
 
+## calculate the dynamic depth for the AI according to the number of moves left
 def dynamic_depth(b):
     moves_left = np.count_nonzero(b == 0)
     if moves_left > (row * col) * 0.7:
